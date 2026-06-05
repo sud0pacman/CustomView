@@ -10,51 +10,47 @@ import SwiftUI
 @Observable
 class Game {
     var directions: [ArrowDirection] = []
-    
+
     init() {
         collectRandomArrow(for: 3)
-        print("Class \(directions.count)")
+        print("Generated grid with \(directions.count) arrows.")
     }
-    
-    private func collectRandomArrow(for size: Int) {
-        let length = ((size*size) - size) - 1
-        directions = Array(repeating: ArrowDirection.allCases.randomElement()!, count: size*size)
-        for i in 0..<length {
-            if i % size == 0 {
-                continue
+
+    func collectRandomArrow(for size: Int) {
+        directions.removeAll()
+        
+        for i in 0..<(size * size) {
+            let row = i / size
+            let col = i % size
+            
+            // Start with all possible choices
+            var validChoices = ArrowDirection.allCases
+            
+            // 1. Check Left Neighbor (if we aren't in the first column)
+            if col > 0 {
+                let leftArrow = directions[i - 1]
+                // Example Rule: Prevent arrows from pointing directly at each other (-> <-)
+                if leftArrow == .right {
+                    validChoices.removeAll { $0 == .left }
+                }
             }
             
-            directions[i] = getHValidArrow(for: directions[i+1])
-            directions[i+size] = getHValidArrow(for: directions[i])
-        }
-    }
-    
-    func getHValidArrow(for arrow: ArrowDirection) -> ArrowDirection {
-        switch arrow {
-        case .right:
-            let temp = ArrowDirection.allCases.randomElement()!
-            if temp == .left {
-                return getHValidArrow(for: arrow)
-            } else {
-                return temp
+            // 2. Check Top Neighbor (if we aren't in the first row)
+            if row > 0 {
+                let topArrow = directions[i - size]
+                // Example Rule: Prevent arrows from pointing directly at each other
+                if topArrow == .down {
+                    validChoices.removeAll { $0 == .up }
+                }
             }
-        case .down:
-            let temp = ArrowDirection.allCases.randomElement()!
-            if temp == .up {
-                return getHValidArrow(for: arrow)
+            
+            // 3. Assign a random element from the remaining valid options
+            if let chosenArrow = validChoices.randomElement() {
+                directions.append(chosenArrow)
             } else {
-                return temp
+                // Fallback catch-all (mathematically, at least 2 options will always be valid)
+                directions.append(.up)
             }
-        default:
-            return arrow
         }
-    }
-    
-    
-    // To Do
-    func getVValidArrow(for arrow: ArrowDirection) -> ArrowDirection {
-        let temp = ArrowDirection.allCases.randomElement()!
-        
-        if arrow
     }
 }

@@ -32,6 +32,11 @@ struct ContentView: View {
             }
             
             Text("\(game.directions.count)")
+            
+            Button("Reload") {
+                game.collectRandomArrow(for: 3)
+            }
+            .buttonStyle(.borderedProminent)
         }
         .padding()
     }
