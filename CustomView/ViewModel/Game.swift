@@ -9,7 +9,7 @@ import SwiftUI
 
 @Observable
 class Game {
-    var directions: [ArrowDirection] = []
+    var directions: [Arrow] = []
 
     init() {
         collectRandomArrow(for: 3)
@@ -28,7 +28,7 @@ class Game {
             
             // 1. Check Left Neighbor (if we aren't in the first column)
             if col > 0 {
-                let leftArrow = directions[i - 1]
+                let leftArrow = directions[i - 1].direction
                 // Example Rule: Prevent arrows from pointing directly at each other (-> <-)
                 if leftArrow == .right {
                     validChoices.removeAll { $0 == .left }
@@ -37,7 +37,7 @@ class Game {
             
             // 2. Check Top Neighbor (if we aren't in the first row)
             if row > 0 {
-                let topArrow = directions[i - size]
+                let topArrow = directions[i - size].direction
                 // Example Rule: Prevent arrows from pointing directly at each other
                 if topArrow == .down {
                     validChoices.removeAll { $0 == .up }
@@ -46,11 +46,22 @@ class Game {
             
             // 3. Assign a random element from the remaining valid options
             if let chosenArrow = validChoices.randomElement() {
-                directions.append(chosenArrow)
+                directions.append(Arrow(direction: chosenArrow, active: true))
             } else {
                 // Fallback catch-all (mathematically, at least 2 options will always be valid)
-                directions.append(.up)
+                directions.append(Arrow(direction: .up, active: true))
             }
         }
     }
+    
+    
 }
+
+// 3 + 2 + 1 = 5
+
+// row=2
+// col=1
+// index=5
+// size=3
+
+// 5..4..3

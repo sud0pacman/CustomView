@@ -7,6 +7,7 @@
 
 struct Arrow {
     var direction: ArrowDirection
+    var active: Bool
 }
 
 enum ArrowDirection: String, CaseIterable {
