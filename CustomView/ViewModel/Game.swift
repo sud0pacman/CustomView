@@ -12,7 +12,7 @@ class Game {
     var directions: [Arrow] = []
 
     init() {
-        collectRandomArrow(for: 3)
+        collectRandomArrow(for: 4)
         print("Generated grid with \(directions.count) arrows.")
     }
 
@@ -52,9 +52,28 @@ class Game {
                 directions.append(Arrow(direction: .up, active: true))
             }
         }
+        
     }
     
-    
+    func canFly(index: Int, size: Int, directionArrow: ArrowDirection) -> Bool {
+        if directionArrow == .right {
+            if (index + 1) % size == 0 {
+                return true
+            }
+            
+            let countOfRightSteps = size - (index%size)
+            
+            print("canFly \(index+1)..\(index+countOfRightSteps)")
+            
+            for i in (index+1)..<index+countOfRightSteps {
+                if directions[i].active {
+                    return false
+                }
+            }
+        }
+        
+        return true
+    }
 }
 
 // 3 + 2 + 1 = 5
@@ -65,3 +84,18 @@ class Game {
 // size=3
 
 // 5..4..3
+
+// index=4
+// size=3
+// length=9
+//
+// length % index = nechta orqaga yurish kerak
+// 3 % 4 = 1
+// 3 % 5 =
+
+
+// index = 2
+// size = 4
+// rightStepCound = size - index+1 = 1
+
+// index...index+rightStepCound=2..2+1=2...3

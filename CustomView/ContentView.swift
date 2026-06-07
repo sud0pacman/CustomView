@@ -14,6 +14,7 @@ struct ContentView: View {
         GridItem(.flexible(minimum: 40)),
         GridItem(.flexible(minimum: 40)),
         GridItem(.flexible(minimum: 40)),
+        GridItem(.flexible(minimum: 40)),
     ]
     
     @State private var uiID: UUID = UUID()
@@ -44,21 +45,22 @@ struct ContentView: View {
                             }
                         }()
                         
-                        let row = index / 3
-                        let col = index % 3
+                        let row = index / 4
+                        let col = index % 4
                         
-                        FlyAwayItem(imageName: arrow.direction.image, goX: goX, goY: goY,)
+                        FlyAwayItem(imageName: arrow.direction.image, goX: goX, goY: goY, canFly: game.canFly(index: index, size: 4, directionArrow: arrow.direction))
                     }
                 }
                 .id(uiID)
                 
                 Text("\(game.directions.count)")
                 
-                Button("Reload") {
+                Button("Reload \(0%4) \(1%4) \(2%4) \(3%4)") {
                     uiID = UUID()
-                    game.collectRandomArrow(for: 3)
+                    game.collectRandomArrow(for: 4)
                 }
                 .buttonStyle(.borderedProminent)
+                
             }
             .padding()
         }
@@ -71,6 +73,7 @@ struct FlyAwayItem: View {
     let imageName: String
     let goX: CGFloat
     let goY: CGFloat
+    let canFly: Bool
     
     @State private var itemOffset: CGSize = .zero
     @State private var isFlewOut: Bool = false
@@ -84,6 +87,10 @@ struct FlyAwayItem: View {
             .opacity(isFlewOut ? 0 : 1) // Ekrandan chiqib ketgach butkul ko'rinmas bo'ladi
             .animation(.easeInOut, value: isFlewOut)
             .onTapGesture {
+                if !canFly {
+                    return
+                }
+                
                 itemOffset = CGSize(width: goX, height: goY)
                 isFlewOut = true
             }
@@ -92,7 +99,7 @@ struct FlyAwayItem: View {
                     HStack {
                         Image(systemName: imageName)
                         
-                        Text("goX: \(goX), goY: \(goY)")
+                        Text("\(canFly)")
                             .font(.caption2)
                     }
                 }
@@ -104,3 +111,9 @@ struct FlyAwayItem: View {
     ContentView()
         .environment(Game())
 }
+
+// index = 2
+// size = 4
+// rightStepCound = size - index+1 = 1
+
+// index...index+rightStepCound=2..2+1=2...3
