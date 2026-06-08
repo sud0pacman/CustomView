@@ -63,26 +63,26 @@ class Game {
             
             let countOfRightSteps = size - (index%size)
             
-            print("canFly \(index+1)..\(index+countOfRightSteps)")
-            
             for i in (index+1)..<index+countOfRightSteps {
                 if directions[i].active {
                     return false
                 }
             }
         } else if directionArrow == .down {
+            print("down: \(index)")
             if index + size >= (size * size) {
                 return true
             }
             
-            var bottomStepCount = index
+            var stepOfBottomIndex = (index+size)
             
-            while bottomStepCount < (size * size) {
-                if directions[bottomStepCount].active {
+            while stepOfBottomIndex < (size * size) {
+                if directions[stepOfBottomIndex].active {
+                    print("down reject because of active: \(stepOfBottomIndex)")
                     return false
                 }
                 
-                bottomStepCount += size
+                stepOfBottomIndex += size
             }
         }
         

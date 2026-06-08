@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @Bindable var game = Game()
+    @Environment(Game.self) private var game
     
     private let threeColumnGrid = [
         GridItem(.flexible(minimum: 40)),
@@ -45,10 +45,7 @@ struct ContentView: View {
                             }
                         }()
                        
-                        FlyAwayItem(imageName: arrow.direction.image, goX: goX, goY: goY, canFly: game.canFly(index: index, size: 4, directionArrow: arrow.direction))
-                            .onTapGesture {
-                                game.move(at: index)
-                            }
+                        FlyAwayItem(imageName: arrow.direction.image, goX: goX, goY: goY, canFly: game.canFly(index: index, size: 4, directionArrow: arrow.direction), index: index)
                     }
                 }
                 .id(uiID)
@@ -74,6 +71,8 @@ struct FlyAwayItem: View {
     let goX: CGFloat
     let goY: CGFloat
     let canFly: Bool
+    let index: Int
+    @Environment(Game.self) var game
     
     @State private var itemOffset: CGSize = .zero
     @State private var isFlewOut: Bool = false
@@ -93,6 +92,7 @@ struct FlyAwayItem: View {
                 
                 itemOffset = CGSize(width: goX, height: goY)
                 isFlewOut = true
+                game.move(at: index)
             }
             .overlay {
                 if !isFlewOut {

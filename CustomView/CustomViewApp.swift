@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct CustomViewApp: App {
-    private var game = Game()
+    @State private var game = Game()
     
     var body: some Scene {
         WindowGroup {
