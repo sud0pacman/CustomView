@@ -70,9 +70,27 @@ class Game {
                     return false
                 }
             }
+        } else if directionArrow == .down {
+            if index + size >= (size * size) {
+                return true
+            }
+            
+            var bottomStepCount = index
+            
+            while bottomStepCount < (size * size) {
+                if directions[bottomStepCount].active {
+                    return false
+                }
+                
+                bottomStepCount += size
+            }
         }
         
         return true
+    }
+    
+    func move(at index: Int) {
+        directions[index].active = false
     }
 }
 

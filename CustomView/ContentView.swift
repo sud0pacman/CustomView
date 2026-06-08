@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(Game.self) var game
+    @Bindable var game = Game()
     
     private let threeColumnGrid = [
         GridItem(.flexible(minimum: 40)),
@@ -44,11 +44,11 @@ struct ContentView: View {
                             default:     return 0
                             }
                         }()
-                        
-                        let row = index / 4
-                        let col = index % 4
-                        
+                       
                         FlyAwayItem(imageName: arrow.direction.image, goX: goX, goY: goY, canFly: game.canFly(index: index, size: 4, directionArrow: arrow.direction))
+                            .onTapGesture {
+                                game.move(at: index)
+                            }
                     }
                 }
                 .id(uiID)
@@ -109,7 +109,7 @@ struct FlyAwayItem: View {
 
 #Preview {
     ContentView()
-        .environment(Game())
+//        .environment(Game())
 }
 
 // index = 2
