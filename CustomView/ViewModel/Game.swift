@@ -69,7 +69,6 @@ class Game {
                 }
             }
         } else if directionArrow == .down {
-            print("down: \(index)")
             if index + size >= (size * size) {
                 return true
             }
@@ -78,11 +77,44 @@ class Game {
             
             while stepOfBottomIndex < (size * size) {
                 if directions[stepOfBottomIndex].active {
-                    print("down reject because of active: \(stepOfBottomIndex)")
                     return false
                 }
                 
                 stepOfBottomIndex += size
+            }
+        } else if directionArrow == .up {
+            if index - size < 0 {
+                return true
+            }
+            
+            var stepOfTopIndex = (index-size)
+            
+            while stepOfTopIndex >= 0 {
+                if directions[stepOfTopIndex].active {
+                    return false
+                }
+                
+                stepOfTopIndex -= size
+            }
+        } else if directionArrow == .left {
+            if index == 0 {
+                return true
+            }
+            
+            if index % size == 0 {
+                return true
+            }
+            
+            var stepOfLeftIndex = index%size
+            print("index: \(index), stepOfLeftIndex: \(stepOfLeftIndex)")
+            
+            while stepOfLeftIndex > 0 {
+                if directions[index-stepOfLeftIndex].active {
+                    print("left otmen because: \(directions[index-stepOfLeftIndex]) active")
+                    return false
+                }
+                
+                stepOfLeftIndex -= 1
             }
         }
         
@@ -93,6 +125,8 @@ class Game {
         directions[index].active = false
     }
 }
+
+// 5 % 4 = 1
 
 // 3 + 2 + 1 = 5
 
