@@ -96,6 +96,7 @@ class Game {
     }
 
     func newGame(size: Int? = nil) {
+        self.grid = []
         self.size = size ?? self.size
         generateSolvablePuzzle()
     }

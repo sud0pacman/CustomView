@@ -17,6 +17,14 @@ struct ArrowTileView: View {
     @State private var scale: CGFloat = 1
 
     private var arrow: Arrow { game.grid[index] }
+    /** `Safety  initing`
+    private var arrow: Arrow {
+        guard game.grid.indices.contains(index) else {
+            return Arrow(direction: .right, isOnBoard: false)
+        }
+        return game.grid[index]
+    }
+    */
     private var canEscape: Bool { game.canEscape(at: index) }
 
     var body: some View {
