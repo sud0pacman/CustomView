@@ -9,23 +9,13 @@ import SwiftUI
 
 struct ArrowTileView: View {
     let index: Int
+    let arrow: Arrow
+    var canEscape: Bool
     @Environment(Game.self) private var game
-
     @State private var flyOffset: CGSize = .zero
     @State private var opacity: Double = 1
     @State private var shaking = false
     @State private var scale: CGFloat = 1
-
-    private var arrow: Arrow { game.grid[index] }
-    /** `Safety  initing`
-    private var arrow: Arrow {
-        guard game.grid.indices.contains(index) else {
-            return Arrow(direction: .right, isOnBoard: false)
-        }
-        return game.grid[index]
-    }
-    */
-    private var canEscape: Bool { game.canEscape(at: index) }
 
     var body: some View {
         Group {
@@ -37,11 +27,9 @@ struct ArrowTileView: View {
                             RoundedRectangle(cornerRadius: 14)
                                 .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
                         )
-
                     Text(arrow.direction.glyph)
                         .font(.system(size: 26, weight: .regular))
                         .foregroundStyle(.primary)
-
                     if canEscape {
                         Circle()
                             .fill(Color.green)
@@ -66,7 +54,6 @@ struct ArrowTileView: View {
 
     private func handleTap() {
         guard arrow.isOnBoard else { return }
-
         if canEscape {
             let (dx, dy) = flyVector()
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {

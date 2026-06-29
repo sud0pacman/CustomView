@@ -11,13 +11,18 @@ struct GridView: View {
     @Environment(Game.self) private var game
 
     var body: some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: game.size)
-        
+        let size = game.size
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: size)
+        let tiles: [(index: Int, arrow: Arrow)] = game.grid.indices.map { i in
+            (index: i, arrow: game.grid[i])
+        }
+
         LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(game.grid.indices, id: \.self) { index in
-                ArrowTileView(index: index)
+            ForEach(tiles, id: \.index) { tile in
+                let canEscape = game.canEscape(at: tile.index)
+                ArrowTileView(index: tile.index, arrow: tile.arrow, canEscape: canEscape)
             }
         }
-        .id(game.size)
+        .id(size)
     }
 }
