@@ -1,27 +1,22 @@
-//
-//  Arrow.swift
-//  CustomView
-//
-//  Created by Muhammad on 04/06/26.
-//
+// Arrow.swift
+import Foundation
+
+enum ArrowDirection: CaseIterable {
+    case up, down, left, right
+}
 
 struct Arrow {
     var direction: ArrowDirection
-    var active: Bool
+    var isOnBoard: Bool = true  // false = escaped/removed
 }
 
-enum ArrowDirection: String, CaseIterable {
-    case up
-    case down
-    case left
-    case right
-    
-    var image: String {
+extension ArrowDirection {
+    var glyph: String {
         switch self {
-        case .up: return "arrow.up"
-        case .down: return "arrow.down"
-        case .left: return "arrow.left"
-        case .right: return "arrow.right"
+        case .up:    return "↑"
+        case .down:  return "↓"
+        case .left:  return "←"
+        case .right: return "→"
         }
     }
 }

@@ -5,149 +5,106 @@
 //  Created by Muhammad on 04/06/26.
 //
 
-import SwiftUI
+import Foundation
 
 @Observable
 class Game {
-    var directions: [Arrow] = []
+    var grid: [Arrow] = []
+    private(set) var size: Int
 
-    init() {
-        collectRandomArrow(for: 4)
-        print("Generated grid with \(directions.count) arrows.")
+    init(size: Int = 4) {
+        self.size = size
+        self.grid = []
+        generateSolvablePuzzle()
     }
 
-    func collectRandomArrow(for size: Int) {
-        directions.removeAll()
-        
-        for i in 0..<(size * size) {
-            let row = i / size
-            let col = i % size
-            
-            // Start with all possible choices
-            var validChoices = ArrowDirection.allCases
-            
-            // 1. Check Left Neighbor (if we aren't in the first column)
-            if col > 0 {
-                let leftArrow = directions[i - 1].direction
-                // Example Rule: Prevent arrows from pointing directly at each other (-> <-)
-                if leftArrow == .right {
-                    validChoices.removeAll { $0 == .left }
-                }
+    // MARK: - Puzzle Generation
+    private func generateSolvablePuzzle() {
+        var cells = Array(repeating: Optional<ArrowDirection>.none, count: size * size)
+        var placementOrder: [Int] = []
+        let indices = Array(0..<size*size).shuffled()
+
+        for i in indices {
+            // Which directions can escape from position i given cells already placed?
+            let valid = ArrowDirection.allCases.filter { dir in
+                cells[i] = dir
+                let canGo = pathIsClear(cells: cells, index: i)
+                cells[i] = nil
+                return canGo
             }
-            
-            // 2. Check Top Neighbor (if we aren't in the first row)
-            if row > 0 {
-                let topArrow = directions[i - size].direction
-                // Example Rule: Prevent arrows from pointing directly at each other
-                if topArrow == .down {
-                    validChoices.removeAll { $0 == .up }
-                }
-            }
-            
-            // 3. Assign a random element from the remaining valid options
-            if let chosenArrow = validChoices.randomElement() {
-                directions.append(Arrow(direction: chosenArrow, active: true))
-            } else {
-                // Fallback catch-all (mathematically, at least 2 options will always be valid)
-                directions.append(Arrow(direction: .up, active: true))
-            }
+            guard let chosen = valid.randomElement() else { continue }
+            cells[i] = chosen
+            placementOrder.insert(i, at: 0) // solution plays in reverse
         }
-        
+
+        // Require at least half the board filled
+        let filled = cells.filter { $0 != nil }.count
+        if filled < max(4, size * size / 2) {
+            generateSolvablePuzzle()
+            return
+        }
+
+        grid = cells.map { dir in
+            Arrow(direction: dir ?? .right, isOnBoard: dir != nil)
+        }
     }
-    
-    func canFly(index: Int, size: Int, directionArrow: ArrowDirection) -> Bool {
-        if directionArrow == .right {
-            if (index + 1) % size == 0 {
-                return true
+
+    // MARK: - Game Logic
+
+    /// Returns true if the arrow at `index` has a clear path to the edge in its direction.
+    func canEscape(at index: Int) -> Bool {
+        guard grid[index].isOnBoard else { return false }
+        let cells = grid.map { $0.isOnBoard ? Optional($0.direction) : nil }
+        return pathIsClear(cells: cells, index: index)
+    }
+
+    /// Core path-check that works on any cell snapshot (used during generation too).
+    private func pathIsClear(cells: [ArrowDirection?], index: Int) -> Bool {
+        guard let dir = cells[index] else { return false }
+        let r = index / size
+        let c = index % size
+
+        switch dir {
+        case .up:
+            // Check every cell above in the same column
+            for rr in stride(from: r - 1, through: 0, by: -1) {
+                if cells[rr * size + c] != nil { return false }
             }
-            
-            let countOfRightSteps = size - (index%size)
-            
-            for i in (index+1)..<index+countOfRightSteps {
-                if directions[i].active {
-                    return false
-                }
+        case .down:
+            for rr in (r + 1)..<size {
+                if cells[rr * size + c] != nil { return false }
             }
-        } else if directionArrow == .down {
-            if index + size >= (size * size) {
-                return true
+        case .left:
+            // Check every cell to the left in the same row
+            for cc in stride(from: c - 1, through: 0, by: -1) {
+                if cells[r * size + cc] != nil { return false }
             }
-            
-            var stepOfBottomIndex = (index+size)
-            
-            while stepOfBottomIndex < (size * size) {
-                if directions[stepOfBottomIndex].active {
-                    return false
-                }
-                
-                stepOfBottomIndex += size
-            }
-        } else if directionArrow == .up {
-            if index - size < 0 {
-                return true
-            }
-            
-            var stepOfTopIndex = (index-size)
-            
-            while stepOfTopIndex >= 0 {
-                if directions[stepOfTopIndex].active {
-                    return false
-                }
-                
-                stepOfTopIndex -= size
-            }
-        } else if directionArrow == .left {
-            if index == 0 {
-                return true
-            }
-            
-            if index % size == 0 {
-                return true
-            }
-            
-            var stepOfLeftIndex = index%size
-            print("index: \(index), stepOfLeftIndex: \(stepOfLeftIndex)")
-            
-            while stepOfLeftIndex > 0 {
-                if directions[index-stepOfLeftIndex].active {
-                    print("left otmen because: \(directions[index-stepOfLeftIndex]) active")
-                    return false
-                }
-                
-                stepOfLeftIndex -= 1
+        case .right:
+            for cc in (c + 1)..<size {
+                if cells[r * size + cc] != nil { return false }
             }
         }
-        
         return true
     }
-    
-    func move(at index: Int) {
-        directions[index].active = false
+
+    /// Attempts to move (escape) the arrow at index. Returns whether it succeeded.
+    @discardableResult
+    func tap(at index: Int) -> Bool {
+        guard canEscape(at: index) else { return false }
+        grid[index].isOnBoard = false
+        return true
+    }
+
+    func newGame(size: Int? = nil) {
+        self.size = size ?? self.size
+        generateSolvablePuzzle()
+    }
+
+    var isCleared: Bool {
+        grid.allSatisfy { !$0.isOnBoard }
+    }
+
+    var remaining: Int {
+        grid.filter { $0.isOnBoard }.count
     }
 }
-
-// 5 % 4 = 1
-
-// 3 + 2 + 1 = 5
-
-// row=2
-// col=1
-// index=5
-// size=3
-
-// 5..4..3
-
-// index=4
-// size=3
-// length=9
-//
-// length % index = nechta orqaga yurish kerak
-// 3 % 4 = 1
-// 3 % 5 =
-
-
-// index = 2
-// size = 4
-// rightStepCound = size - index+1 = 1
-
-// index...index+rightStepCound=2..2+1=2...3
